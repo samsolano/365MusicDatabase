@@ -1,4 +1,4 @@
-# 365MusicDatabase
+# MusicDatabase
 
 Sam Solano - slsolano@calpoly.edu
 Ryan Ceballos - rceballo@calpoly.edu
