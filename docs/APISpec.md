@@ -6,30 +6,43 @@ The API calls are made in this sequence when a user
 1. `Get Streams`
 2. `Get Top 3 Streamed`
 
-1) Get Streams -
+### 1.1. Get Streams - `get_streams` (GET)
+
 Gets total number of streams logged
-Response
+
+**Response**:
+```json
 [
     {
         "streamNum": "integer"
     }
 ]
+```
 
-2) Streams by Artist
-    Gets streams specific to an artist that the user asks for
-Request
+### 1.2. Streams by Artist - (GET)
+
+Gets streams specific to an artist that the user asks for
+
+**Request**:
+
+```json
 [
     {
         "artistName": "string"
     }
 ]
-Response
+```
+
+**Response**:
+
+```json
 [
     {
         "artistName": "string",
         "streamNum": "integer"
     }
 ]
+```
 
 ## 2. Artist New Song
 
@@ -51,7 +64,8 @@ Adds a new song to the music database. Adds a struct Song to the database with s
   "genre": "string",
   "explicit_rating": "string",
   "label": "string",
-  "date_added": "string",
+  "song_length": "integer",
+  "date_added": "string"
 }
 ```
 
@@ -59,7 +73,7 @@ Adds a new song to the music database. Adds a struct Song to the database with s
 
 ```json
 {
-    "cart_id": "string" /* This id will be used for future calls to add items and checkout */
+    "success": "boolean"
 }
 ``` 
 
@@ -232,6 +246,7 @@ Submit an explicit content rating.
 
 The API calls are made in this sequence when the User wants to make a playlist:
 1. `Get explicit rating` 
+2. `List appropiate songs` 
 
 ### 6.1. Get explicit - `/songs/get_explicit` (POST)
 
@@ -242,9 +257,33 @@ Returns a the explicit rating of a song.
 ```json
 [
   {
-    "explicit": "integer"
+    "explicit": "floating"
   }
 ]
 ```
+### 6.2. Get non explicit songs - `/songs/non_explicit_list` (POST)
+
+Returns a the explicit rating of a song. 
+**Request**:
+
+```json
+[
+  {
+    "rating": "floating"
+  }
+]
+```
+
+**Response**:
+
+```json
+[
+  {
+    "song_id": "integer",
+    "explicit": "floating"
+  }
+]
+```
+
 
 

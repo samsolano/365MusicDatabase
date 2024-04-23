@@ -15,5 +15,7 @@
     Drake now has his music in one playlist and can rap along.
 
 # 3:
-    Jermaine wants his kids to be able to listen to kid friendly music. To do so, Jermaine needs to:
-    - 
+    Jermaine wants his kids to be able to listen to kid/age appropriate music. To do so, Jermaine needs to:
+    - enter a rating of how explicit he wants the music (default would be 0.2)
+    - A list of songs with a rating less than or equal to what is set
+    If Jermaine thinks that a song is explicit he could submit it by filling out a form.  
