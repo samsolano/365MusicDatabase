@@ -1,16 +1,10 @@
 # API Specification for Music Database
 
-## 1. User Streaming
+## 1. Requesting Streaming Data
 
-The API calls are made in this squence when 
-1. Get Streams
-2. Get Top 3 Streamed
-3. 
-4.
-5.
-6.
-7.
-8.
+The API calls are made in this sequence when a user
+1. `Get Streams`
+2. `Get Top 3 Streamed`
 
 1) Get Streams -
 Gets total number of streams logged
@@ -37,85 +31,220 @@ Response
     }
 ]
 
+## 2. Artist New Song
 
-## 3. CARLOSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+The API calls are made in this sequence when an artist adds a new song:
+1. `Upload Song`
 
-The API calls are made in this sequence when the bottler comes:
-1. `Get Bottle Plan`
-2. `Deliver Bottles`
+### 2.1. Upload Song - `/new_song/` (POST)
 
-### 2.1. Get Bottle Plan - `/bottler/plan` (POST)
+Adds a new song to the music database. Adds a struct Song to the database with song_id being the unique identifier.
 
-Gets the plan for bottling potions.
+**Request**:
+
+```json
+{
+  "song_id": "string",
+  "song_name": "string",
+  "artist": "number",
+  "album": "string",
+  "genre": "string",
+  "explicit_rating": "string",
+  "label": "string",
+  "date_added": "string",
+}
+```
 
 **Response**:
 
 ```json
-[
-    {
-        "potion_type": [r, g, b, d],
-        "quantity": "integer"
-    }
-]
-```
+{
+    "cart_id": "string" /* This id will be used for future calls to add items and checkout */
+}
+``` 
 
-### 2.2. Deliver Bottles - `/bottler/deliver/{order_id}` (POST)
+## 3. Make a playlist.
 
-Posts delivery of potions. order_id is a unique value representing
-a single delivery. 
+The API calls are made in this sequence when the User wants to make a playlist:
+1. `Give Playlist Name`
+2. `List Song Suggestions`
+3. `Search For Songs`
+4. `Add Song to Playlist`
+
+### 3.1. Give Playlist Name - `/playlist/newplaylist` (POST)
+
+The user creates a playlist and gives it a name. 
 
 **Request**:
 
 ```json
 [
   {
-    "potion_type": [r, g, b, d],
-    "quantity": "integer"
+    "playlist_name": "string"
   }
 ]
 ```
 
-## 4. CARLOSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+**Response**:
 
-The API calls are made in this sequence when the bottler comes:
-1. `Get Bottle Plan`
-2. `Deliver Bottles`
+```json
+{
+    "success": "string"
+}
+```
 
-### 2.1. Get Bottle Plan - `/bottler/plan` (POST)
+### 3.2. List Song Suggestions - `/playlist/make` (POST)
 
-Gets the plan for bottling potions.
+Lists some songs the user can pick from to start their playlist.
 
 **Response**:
 
 ```json
 [
     {
-        "potion_type": [r, g, b, d],
-        "quantity": "integer"
+        "top_songs": "string"
     }
 ]
 ```
 
-### 2.2. Deliver Bottles - `/bottler/deliver/{order_id}` (POST)
+### 3.3. Search For Songs - `/playlist/addsong/search` (POST)
 
-Posts delivery of potions. order_id is a unique value representing
-a single delivery. 
+Allows the user to search for a song by name or by artist to add to their playlist. 
 
 **Request**:
 
 ```json
 [
   {
-    "potion_type": [r, g, b, d],
-    "quantity": "integer"
+    "artist_name": "string",
+    "song_name": "string"
   }
 ]
 ```
 
-5)
+**Response**:
 
-6)
+```json
+{
+    "search_results": "string",
+    "song_name": "string",
+    "song_id": "integer"
+}
+```
+### 3.4. Add Song to Playlist - `/playlist/addsong` (POST)
 
-7)
+Allows the User to add a song to a playlist
 
-8)
+**Request**:
+
+```json
+[
+  {
+    "playlist_name": "string",
+    "song_name": "string",
+    "song_id": "integer"
+  }
+]
+```
+
+**Response**:
+
+```json
+{
+    "success": "string"
+}
+```
+
+
+## 4. Like Songs and Add to 'Liked' Playlist
+
+The API calls are made in this sequence when the User likes a song:
+1. `Get Song ID`
+2. `Add to Liked Songs`
+
+### 2.1. Get Song ID - `/songs/id` (POST)
+
+Gets the song ID for the song that was liked by the User.
+
+**Request**:
+
+```json
+[
+  {
+    "song_name": "string",
+    "artist_name": "string"
+  }
+]
+```
+
+**Response**:
+
+```json
+[
+    {
+        "song_id": "integer"
+    }
+]
+```
+
+### 2.2. Add to Liked Songs - `/playlist/likedsongs` (POST)
+
+Add the song the User liked to the 'Liked Songs' playlist.
+
+**Request**:
+
+```json
+[
+  {
+    "song_id": "integer"
+  }
+]
+```
+
+**Response**:
+
+```json
+{
+    "success": "string"
+}
+```
+
+## 5. Get Explicit Content.
+
+The API calls are made in this sequence when the User wants to make a playlist:
+1. `Submit explicit rating` 
+
+### 5.1. Submit Explicit Content Rating - `/song/input_explicit` (POST)
+
+Submit an explicit content rating. 
+
+**Request**:
+
+```json
+[
+  {
+    "song_id": "string",
+    "explicit_rating": "integer",
+  }
+]
+```
+## 6. Get Explicit Content.
+
+The API calls are made in this sequence when the User wants to make a playlist:
+1. `Get explicit rating` 
+
+### 6.1. Get explicit - `/songs/get_explicit` (POST)
+
+Returns a the explicit rating of a song. 
+
+**Return**:
+
+```json
+[
+  {
+    "explicit": "integer"
+  }
+]
+```
+
+
