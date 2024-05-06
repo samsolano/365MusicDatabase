@@ -6,7 +6,7 @@ import sqlalchemy
 from src import database as db
 from typing import Dict
 
-@router.get("/search/", tags=["search"])
+@router.get("/musicmain/", tags=["search"])
 def search_characters(
         character_name: str = "",
         sort_col: str = "",

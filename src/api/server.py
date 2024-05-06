@@ -1,7 +1,7 @@
 from fastapi import FastAPI, exceptions
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
-from src.api import main
+from MusicDatabase.src.api import musicmain
 import json
 import logging
 import sys
@@ -34,7 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(main.router)
+app.include_router(musicmain.router)
 
 
 @app.exception_handler(exceptions.RequestValidationError)
