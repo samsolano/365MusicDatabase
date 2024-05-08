@@ -4,7 +4,9 @@ Metro is a big music fan and likes to be on top of every new song from his favor
 
 # Testing results
 <Repeated for each step of the workflow>
-1. The curl statement called.
+1.  The curl statement called.
+
+  
   curl -X 'POST' \
   'http://127.0.0.1:8000/musicmain/upload_music/' \
   -H 'accept: application/json' \
@@ -29,4 +31,5 @@ Metro is a big music fan and likes to be on top of every new song from his favor
 }'
 
 2. The response received.
-  "Upload Error: Album already exits"
+
+"Upload Error: Album already exits"
