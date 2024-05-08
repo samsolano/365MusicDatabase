@@ -34,7 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.include_router(musicmain.router)
+app.include_router(musicmain.router)
 
 
 @app.exception_handler(exceptions.RequestValidationError)
