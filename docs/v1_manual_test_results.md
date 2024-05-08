@@ -1,7 +1,6 @@
 # Example workflow
 
-<copy and paste the workflow you had described in the
-early group project assignment that you will first implement>
+Metro is a big music fan and likes to be on top of every new song from his favorite artists. He wants to be able to add a song into the data base if it hasn't been added. He will start by gathering all the information from the particular song. This includes the song name, artist(s) name, album name, and other important information. Then Metro will send the information to the data base. Lastly, he will get a response on whether the song was successfully added or if it already exists.
 
 # Testing results
 
