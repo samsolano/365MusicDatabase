@@ -10,7 +10,7 @@ Metro is a big music fan and likes to be on top of every new song from his favor
   curl -X 'POST' \
   'http://127.0.0.1:8000/musicmain/upload_music/' \
   -H 'accept: application/json' \
-  -H 'access_token: donutHolesApiKey' \
+  -H 'access_token: *****' \
   -H 'Content-Type: application/json' \
   -d '{
   "album_name": "string",
