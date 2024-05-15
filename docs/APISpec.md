@@ -3,6 +3,7 @@
 ## 1. Requesting Streaming Data
 
 The API calls are made in this sequence when a user
+
 1. `Get Streams`
 2. `Get Top 3 Streamed`
 
@@ -11,11 +12,12 @@ The API calls are made in this sequence when a user
 Gets total number of streams logged
 
 **Response**:
+
 ```json
 [
-    {
-        "streamNum": "integer"
-    }
+  {
+    "streamNum": "integer"
+  }
 ]
 ```
 
@@ -27,9 +29,9 @@ Gets streams specific to an artist that the user asks for
 
 ```json
 [
-    {
-        "artistName": "string"
-    }
+  {
+    "artistName": "string"
+  }
 ]
 ```
 
@@ -37,16 +39,17 @@ Gets streams specific to an artist that the user asks for
 
 ```json
 [
-    {
-        "artistName": "string",
-        "streamNum": "integer"
-    }
+  {
+    "artistName": "string",
+    "streamNum": "integer"
+  }
 ]
 ```
 
 ## 2. Artist New Song
 
 The API calls are made in this sequence when an artist adds a new song:
+
 1. `Upload Song`
 
 ### 2.1. Upload Song - `/new_song/` (POST)
@@ -73,13 +76,14 @@ Adds a new song to the music database. Adds a struct Song to the database with s
 
 ```json
 {
-    "success": "boolean"
+  "success": "boolean"
 }
-``` 
+```
 
 ## 3. Make a playlist.
 
 The API calls are made in this sequence when the User wants to make a playlist:
+
 1. `Give Playlist Name`
 2. `List Song Suggestions`
 3. `Search For Songs`
@@ -87,7 +91,7 @@ The API calls are made in this sequence when the User wants to make a playlist:
 
 ### 3.1. Give Playlist Name - `/playlist/newplaylist` (POST)
 
-The user creates a playlist and gives it a name. 
+The user creates a playlist and gives it a name.
 
 **Request**:
 
@@ -103,7 +107,7 @@ The user creates a playlist and gives it a name.
 
 ```json
 {
-    "success": "string"
+  "success": "string"
 }
 ```
 
@@ -115,15 +119,15 @@ Lists some songs the user can pick from to start their playlist.
 
 ```json
 [
-    {
-        "top_songs": "string"
-    }
+  {
+    "top_songs": "string"
+  }
 ]
 ```
 
 ### 3.3. Search For Songs - `/playlist/addsong/search` (POST)
 
-Allows the user to search for a song by name or by artist to add to their playlist. 
+Allows the user to search for a song by name or by artist to add to their playlist.
 
 **Request**:
 
@@ -140,11 +144,12 @@ Allows the user to search for a song by name or by artist to add to their playli
 
 ```json
 {
-    "search_results": "string",
-    "song_name": "string",
-    "song_id": "integer"
+  "search_results": "string",
+  "song_name": "string",
+  "song_id": "integer"
 }
 ```
+
 ### 3.4. Add Song to Playlist - `/playlist/addsong` (POST)
 
 Allows the User to add a song to a playlist
@@ -165,14 +170,14 @@ Allows the User to add a song to a playlist
 
 ```json
 {
-    "success": "string"
+  "success": "string"
 }
 ```
-
 
 ## 4. Like Songs and Add to 'Liked' Playlist
 
 The API calls are made in this sequence when the User likes a song:
+
 1. `Get Song ID`
 2. `Add to Liked Songs`
 
@@ -195,9 +200,9 @@ Gets the song ID for the song that was liked by the User.
 
 ```json
 [
-    {
-        "song_id": "integer"
-    }
+  {
+    "song_id": "integer"
+  }
 ]
 ```
 
@@ -219,18 +224,19 @@ Add the song the User liked to the 'Liked Songs' playlist.
 
 ```json
 {
-    "success": "string"
+  "success": "string"
 }
 ```
 
 ## 5. Get Explicit Content.
 
 The API calls are made in this sequence when the User wants to make a playlist:
-1. `Submit explicit rating` 
+
+1. `Submit explicit rating`
 
 ### 5.1. Submit Explicit Content Rating - `/song/input_explicit` (POST)
 
-Submit an explicit content rating. 
+Submit an explicit content rating.
 
 **Request**:
 
@@ -238,19 +244,22 @@ Submit an explicit content rating.
 [
   {
     "song_id": "string",
-    "explicit_rating": "integer",
+    "explicit_rating": "integer"
   }
 ]
 ```
+
 ## 6. Get Explicit Content.
 
 The API calls are made in this sequence when the User wants to make a playlist:
-1. `Get explicit rating` 
-2. `List appropiate songs` 
+
+1. `Get explicit rating`
+2. `List appropiate songs`
+3. `Submit Explicit`
 
 ### 6.1. Get explicit - `/songs/get_explicit` (POST)
 
-Returns a the explicit rating of a song. 
+Returns a the explicit rating of a song.
 
 **Return**:
 
@@ -261,9 +270,10 @@ Returns a the explicit rating of a song.
   }
 ]
 ```
+
 ### 6.2. Get non explicit songs - `/songs/non_explicit_list` (POST)
 
-Returns a the explicit rating of a song. 
+Returns a the explicit rating of a song.
 **Request**:
 
 ```json
@@ -285,5 +295,24 @@ Returns a the explicit rating of a song.
 ]
 ```
 
+### 6.3. Submit Explicit Rating - `/songs/submit_rating` (POST)
 
+Returns if successful.
+**Request**:
 
+```json
+[
+  {
+    "song": "string",
+    "rating": "int"
+  }
+]
+```
+
+**Response**:
+
+```json
+{
+  "success": "boolean"
+}
+```

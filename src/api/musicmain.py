@@ -29,6 +29,7 @@ class Song(BaseModel):
     featured_artist: str
     explicit_rating: float
     length: int
+    
 class Album(BaseModel):
     album_name: str
     song_list: list[Song]
@@ -91,14 +92,14 @@ def add_user(user: User):
     return "OK"
 
 
-@router.post("/get total streams/")
+@router.post("/get_total_streams/")
 def get_streams(user: User):
     """returns list of all songs streamed by user"""
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(""" 
-                                                    SELECT songs.song_name, artists.artist_name, songs.featured_artist FROM streams
-                                                    JOIN songs on streams.song_id = songs.song_id 
-                                                    JOIN artists on artists.id = songs.artist_id 
+                                                    SELECT song.song_name, artist.artist_name, song.featured_artist FROM streams
+                                                    JOIN song on streams.song_id = song.song_id 
+                                                    JOIN artist on artists.id = song.artist_id 
                                                     WHERE users.user_id = :USERID
                                                                     """), [{"USERID": user.user_id}])
 
@@ -110,17 +111,17 @@ def streams_byArtist(user: User, artist: Artist):
 
     with db.engine.begin() as connection:
         result = connection.execute(sqlalchemy.text(""" 
-                                                SELECT songs.song_name  FROM streams
-                                                JOIN songs on streams.song_id = songs.song_id 
-                                                JOIN artists on artists.id = songs.artist_id 
-                                                WHERE users.user_id = :USERID AND artists.artist_id = :ARTISTID
+                                                SELECT song.song_name  FROM streams
+                                                JOIN song on stream.song_id = song.song_id 
+                                                JOIN artist on artists.id = song.artist_id 
+                                                WHERE users.user_id = :USERID AND artist.artist_id = :ARTISTID
                                                                 """), [{"USERID": user.user_id, "ARTISTID": artist.artist_id}])
 
     return result
 
 
 
-@router.get("/create_playlist/") 
+@router.post("/create_playlist/") 
 def create_playlist(playlist: Playlist):
     """Create a new playlist for a user"""
     with db.engine.begin() as connection:
@@ -129,17 +130,48 @@ def create_playlist(playlist: Playlist):
     return "Playlist Created"
 
 
-@router.get("/add_song_to_playlist/")
+@router.post("/add_song_to_playlist/")
 def add_song_to_playlist(song: Song, playlist: Playlist, user: User):
     """Add a song to a playlist for a user"""
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("INSERT INTO song_playlist (song_id, playlist_id, user_id) VALUES (:song_id, :playlist_id, :user_id)"),
                            [{"song_id": song.song_id, "playlist_id": playlist.playlist_id, "user_id": user.user_id}])
-    return "Song Added to Playlist"
+    if(song.song_id is None or playlist.playlist_id is None or user.user_id is None):
+        return "Error: Song, Playlist, or User does not exist"
+    else:
+            "Song Added to Playlist"
+
 
     
     
     # work right here ma boi
+@router.post("/songs/submit_rating/")
+def add_rating_to_song(song: str, user_rating: int):
+    """Submits their rating for a song if it is explicit or not"""
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("""INSERT INTO explicit_submission (song_id, exbool) 
+                                            SELECT song_id, :rating
+                                            FROM song
+                                            WHERE song_name = :thesong"""),
+                           [{"thesong": song, "rating": user_rating}])
+    
+    return "Rating Submitted"
+
+@router.post("/playlist/get_clean_songs/")
+def get_clean_songs(playlist_name: str):
+    """Returns all songs from the playlist that are not explicit"""
+    filtered_arr = []
+    with db.engine.begin() as connection:
+        filterd_list = connection.execute(sqlalchemy.text("""SELECT song_id
+                                                FROM song_playlist
+                                                JOIN user_playlist on user_playlist.playlist_id = song_playlist.playlist_id
+                                                WHERE user_playlist.playlist_name = :playlistName"""),
+                           [{"playlistName": playlist_name}])
+    
+        for songs in filterd_list:
+            filtered_arr.append(songs)
+            
+    return filtered_arr
     
     
     
