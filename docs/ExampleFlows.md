@@ -19,3 +19,6 @@
     - enter a rating of how explicit he wants the music (default would be 0.2)
     - A list of songs with a rating less than or equal to what is set
     If Jermaine thinks that a song is explicit he could submit it by filling out a form.  
+
+# 4:
+    Metro is a big music fan and likes to be on top of every new song from his favorite artists. He wants to be able to add a song into the data base if it hasn't been added. He will start by gathering all the information from the particular song. This includes the song name, artist(s) name, album name, and other important information. Then Metro will send the information to the data base. Lastly, he will get a response on whether the song was successfully added or if it already exists.

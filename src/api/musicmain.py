@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from src.api import auth
 from enum import Enum
+import math
 import sqlalchemy
 from src import database as db
 from typing import Dict
@@ -12,6 +13,41 @@ router = APIRouter(
     tags=["musicmain"],
     dependencies=[Depends(auth.get_api_key)],
 )
+
+class Song(BaseModel):
+    song_name: str
+    artist_name: str
+    featured_artist: str
+    explicit_rating: float
+    length: int
+class Album(BaseModel):
+    album_name: str
+    song_list: list[Song]
+    artist_id: str
+    genre: str
+    explicit_rating: int
+    label: str
+    release_date: str
+
+
+@router.post("/upload_music/")
+def upload_new_music(new_album_catalog: Album):
+    """Upload a new album including songs and metadata"""
+    with db.engine.begin() as connection:
+        album_check = connection.execute(sqlalchemy.text(
+            "SELECT * FROM album WHERE album_name = :name"),
+                                        [{"name": new_album_catalog.album_name}]).scalar()
+        if album_check is None:
+            connection.execute(sqlalchemy.text(
+                "INSERT INTO album (album_name, artist_id, genre, explicit_rating, label, release_date) VALUES (:album_name, :artist_id, :genre, :xprat, :label, :release_date)"),
+                    [{"album_name": new_album_catalog.album_name, "artist_id": new_album_catalog.artist_id, "genre": new_album_catalog.genre, "xprat": new_album_catalog.explicit_rating, "label": new_album_catalog.label, "release_date": new_album_catalog.release_date}])
+            for song in new_album_catalog.song_list:
+                connection.execute(sqlalchemy.text(
+                    "INSERT INTO album (song_name, artist_id, featured_artist, explicit_rating, length) VALUES (:song_name, :artist_id, :featured_artist, :explicit_rating, :length)"),
+                        [{"song_name": song.song_name, "artist_id": 1, "featured_artist": song.featured_artist, "explicit_rating": song.explicit_rating, "length": song.length}])
+        else:
+            return "Upload Error: Album already exits"
+    return "OK"
 
 @router.get("/musicmain/", tags=["musicmain"])
 def search_characters(
