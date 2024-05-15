@@ -14,7 +14,16 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+class User(BaseModel):
+    user_id: int
+    username: str
+
+class Artist(BaseModel):
+    artist_id: int
+    artist_name: str
+
 class Song(BaseModel):
+    song_id: int
     song_name: str
     artist_name: str
     featured_artist: str
@@ -28,6 +37,16 @@ class Album(BaseModel):
     explicit_rating: int
     label: str
     release_date: str
+
+
+# user playlist relational table: userid and playlistid and playlist name
+# song playlsit user table: songid and playlistid and userid
+class Playlist(BaseModel):
+    playlist_id: int
+    playlist_name: str
+    user_id: int
+    
+
 
 
 @router.post("/upload_music/")
@@ -49,12 +68,83 @@ def upload_new_music(new_album_catalog: Album):
             return "Upload Error: Album already exits"
     return "OK"
 
-@router.get("/musicmain/", tags=["musicmain"])
-def search_characters(
-        character_name: str = "",
-        sort_col: str = "",
-        sort_order: str = "",
-):
+
+
+@router.post("/log_streams/")
+def log_streams(song: Song, user: User):
+    """   take in a song that is logged by a user, and put it in the stream table"""
+
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("INSERT INTO streams (user_id, song_id) VALUES (:userID, :songID)"), 
+                           [{"userID": user.user_id , "songID": song.song_id}])
+
+    return "OK"
+
+@router.post("/add_user/")
+def add_user(user: User):
+    """add user to users table"""
+
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("INSERT INTO users (username) VALUES (:userName)"), 
+                           [{"userName": user.username }])
+
+    return "OK"
+
+
+@router.post("/get total streams/")
+def get_streams(user: User):
+    """returns list of all songs streamed by user"""
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(""" 
+                                                    SELECT songs.song_name, artists.artist_name, songs.featured_artist FROM streams
+                                                    JOIN songs on streams.song_id = songs.song_id 
+                                                    JOIN artists on artists.id = songs.artist_id 
+                                                    WHERE users.user_id = :USERID
+                                                                    """), [{"USERID": user.user_id}])
+
+    return result
+
+@router.post("/get_stream_byArtist/")
+def streams_byArtist(user: User, artist: Artist):
+    """add user to users table"""
+
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(""" 
+                                                SELECT songs.song_name  FROM streams
+                                                JOIN songs on streams.song_id = songs.song_id 
+                                                JOIN artists on artists.id = songs.artist_id 
+                                                WHERE users.user_id = :USERID AND artists.artist_id = :ARTISTID
+                                                                """), [{"USERID": user.user_id, "ARTISTID": artist.artist_id}])
+
+    return result
+
+
+
+@router.get("/create_playlist/") 
+def create_playlist(playlist: Playlist):
+    """Create a new playlist for a user"""
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("INSERT INTO user_playlist (playlist_name, user_id) VALUES (:playlist_name, :user_id)"),
+                           [{"playlist_name": playlist.playlist_name, "user_id": playlist.user_id}])
+    return "Playlist Created"
+
+
+@router.get("/add_song_to_playlist/")
+def add_song_to_playlist(song: Song, playlist: Playlist, user: User):
+    """Add a song to a playlist for a user"""
+    with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("INSERT INTO song_playlist (song_id, playlist_id, user_id) VALUES (:song_id, :playlist_id, :user_id)"),
+                           [{"song_id": song.song_id, "playlist_id": playlist.playlist_id, "user_id": user.user_id}])
+    return "Song Added to Playlist"
+
+    
+    
+    # work right here ma boi
+    
+    
+    
+    
+    
     """
     Search for cart line items by customer name and/or potion sku.
 
