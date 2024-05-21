@@ -162,7 +162,7 @@ def add_song_to_playlist(song: Song, playlist: Playlist, user: User):
 def add_rating_to_song(song: str, user_rating: int):
     """Submits their rating for a song if it is explicit or not"""
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("""INSERT INTO explicit_submission (song_id, exbool) 
+        connection.execute(sqlalchemy.text("""INSERT INTO explicit_submissions (songid, exbool) 
                                             SELECT song_id, :rating
                                             FROM song
                                             WHERE song_name = :thesong"""),
