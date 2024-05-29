@@ -19,11 +19,9 @@ class User(BaseModel):
     username: str
 
 class Artist(BaseModel):
-    artist_id: int
     artist_name: str
 
 class Song(BaseModel):
-    song_id: int
     song_name: str
     artist_name: str
     featured_artist: str
@@ -33,7 +31,6 @@ class Song(BaseModel):
 class Album(BaseModel):
     album_name: str
     song_list: list[Song]
-    artist_id: str
     genre: str
     explicit_rating: int
     label: str
