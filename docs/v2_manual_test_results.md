@@ -11,19 +11,14 @@ that he has been listening to so that the database is up to date. Then he calls 
 1.  The curl statement called.
 
 curl -X 'POST' \
- 'http://127.0.0.1:8000/musicmain/get_streams/' \
+ 'http://127.0.0.1:8000/musicmain/log_streams/?song_id=1' \
  -H 'accept: application/json' \
- -H 'access_token: **\***' \
+ -H 'access_token: donutHolesApiKey' \
  -H 'Content-Type: application/json' \
  -d '{
-"user_id": int,
-"song_list": [
-{
-"song_name": "string",
-"artist_name": "string",
-"featured_artist": "string",
-}
-] }'
+"user_id": 1,
+"username": "string"
+}'
 
 2. The response received.
 
