@@ -2,23 +2,23 @@
 
 ## 1. Requesting Streaming Data
 
-The API calls are made in this sequence when a user
+User can request three different ways to see streaming data
 
 1. `Get Streams`
-2. `Get Top 3 Streamed`
+2. `Streams Byartist`
+3. `Top Streams`
 
 ### 1.1. Get Streams - `get_streams` (GET)
 
 Gets total number of streams logged
 
-**Response**:
+**Request**:
 
 ```json
-[
-  {
-    "streamNum": "integer"
-  }
-]
+{
+  "user_id": 0,
+  "username": "string"
+}
 ```
 
 ### 1.2. Streams by Artist - (GET)
@@ -28,11 +28,15 @@ Gets streams specific to an artist that the user asks for
 **Request**:
 
 ```json
-[
-  {
-    "artistName": "string"
+{
+  "user": {
+    "user_id": 0,
+    "username": "string"
+  },
+  "artist": {
+    "artist_name": "string"
   }
-]
+}
 ```
 
 **Response**:
@@ -46,29 +50,39 @@ Gets streams specific to an artist that the user asks for
 ]
 ```
 
+### 1.3. Top Streans - `top_streams` (GET)
+
+Gets the top 10 streamed songs
+
+**Response**:
+
+```json
+[
+  {
+    "Position": "integer",
+    "Song": "string",
+    "Artist": "string",
+    "Streams": "integer"
+  }
+]
+```
+
 ## 2. Artist New Song
 
-The API calls are made in this sequence when an artist adds a new song:
+The API calls are made in this sequence when an artist adds new music:
 
-1. `Upload Song`
+1. `Create Artist`
+2. `Upload New Music`
 
-### 2.1. Upload Song - `/new_song/` (POST)
+### 2.1. Create Artist - `/create_artist/` (POST)
 
-Adds a new song to the music database. Adds a struct Song to the database with song_id being the unique identifier.
+Adds a new aritst to the music database. Adds a struct Artist to the database with album_name being the unique identifier
 
 **Request**:
 
 ```json
 {
-  "song_id": "string",
-  "song_name": "string",
-  "artist": "number",
-  "album": "string",
-  "genre": "string",
-  "explicit_rating": "string",
-  "label": "string",
-  "song_length": "integer",
-  "date_added": "string"
+  "artist_name": "string"
 }
 ```
 
@@ -76,7 +90,41 @@ Adds a new song to the music database. Adds a struct Song to the database with s
 
 ```json
 {
-  "success": "boolean"
+  "artist_id": "integer"
+}
+```
+
+### 2.2. Upload New Music - `/upload_music/` (POST)
+
+Adds a new song to the music database. Adds a struct Song to the database with song_id being the unique identifier.
+
+**Request**:
+
+```json
+{
+  "album_name": "string",
+  "artist_name": "string",
+  "song_list": [
+    {
+      "song_name": "string",
+      "artist_name": "string",
+      "featured_artist": "string",
+      "explicit_rating": 0,
+      "length": 0
+    }
+  ],
+  "genre": "string",
+  "explicit_rating": 0,
+  "label": "string",
+  "release_date": "string"
+}
+```
+
+**Response**:
+
+```json
+{
+  "success": "string"
 }
 ```
 
