@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from MusicDatabase.src.api import auth
+from src.api import auth
 from enum import Enum
 import math
 import sqlalchemy
-from MusicDatabase.src import database as db
+from src import database as db
 from typing import Dict
 from pip._vendor import requests
 import json
-import openai
-import MusicDatabase.creds as creds
+# import openai
+import creds as creds
 
 
 router = APIRouter(
@@ -31,9 +31,10 @@ class Song(BaseModel):
     featured_artist: str
     explicit_rating: float
     length: int
-    
+
 class Album(BaseModel):
     album_name: str
+    artist_name: str
     song_list: list[Song]
     genre: str
     explicit_rating: int
@@ -47,9 +48,20 @@ class Playlist(BaseModel):
     playlist_id: int
     playlist_name: str
     user_id: int
-    
 
-
+@router.post("/create_artist")
+def create_artist(new_artist: Artist):
+    """ Create new artist  """
+    with db.engine.begin() as connection:
+        artist_check = connection.execute(sqlalchemy.text(
+            "SELECT * FROM artist WHERE artist_name = :name"),
+                                        [{"name": new_artist.artist_name}]).scalar()
+        if artist_check is None:
+            artist_id = connection.execute(sqlalchemy.text("INSERT INTO artist (artist_name) VALUES (:name) RETURNING id"),
+                                            [{"name": new_artist.artist_name}]).scalar()
+        else:
+            return "Artist Creation Error: Artist already exists"
+    return {"artist_id": artist_id}
 
 @router.post("/upload_music/")
 def upload_new_music(new_album_catalog: Album):
@@ -58,18 +70,20 @@ def upload_new_music(new_album_catalog: Album):
         album_check = connection.execute(sqlalchemy.text(
             "SELECT * FROM album WHERE album_name = :name"),
                                         [{"name": new_album_catalog.album_name}]).scalar()
+        artistId = connection.execute(sqlalchemy.text(
+            "SELECT id FROM artist WHERE artist_name = :name"),
+                                        [{"name": new_album_catalog.artist_name}]).scalar()
         if album_check is None:
-            connection.execute(sqlalchemy.text(
-                "INSERT INTO album (album_name, artist_id, genre, explicit_rating, label, release_date) VALUES (:album_name, :artist_id, :genre, :xprat, :label, :release_date)"),
-                    [{"album_name": new_album_catalog.album_name, "artist_id": new_album_catalog.artist_id, "genre": new_album_catalog.genre, "xprat": new_album_catalog.explicit_rating, "label": new_album_catalog.label, "release_date": new_album_catalog.release_date}])
+            albumId = connection.execute(sqlalchemy.text(
+                "INSERT INTO album (album_name, artist_id, genre, explicit_rating, label, release_date) VALUES (:album_name, :artist_id, :genre, :xprat, :label, :release_date) RETURNING id"),
+                    [{"album_name": new_album_catalog.album_name, "artist_id": artistId, "genre": new_album_catalog.genre, "xprat": new_album_catalog.explicit_rating, "label": new_album_catalog.label, "release_date": new_album_catalog.release_date}]).scalar()
             for song in new_album_catalog.song_list:
                 connection.execute(sqlalchemy.text(
-                    "INSERT INTO album (song_name, artist_id, featured_artist, explicit_rating, length) VALUES (:song_name, :artist_id, :featured_artist, :explicit_rating, :length)"),
-                        [{"song_name": song.song_name, "artist_id": 1, "featured_artist": song.featured_artist, "explicit_rating": song.explicit_rating, "length": song.length}])
+                    "INSERT INTO song (song_name, artist_id, featured_artist, explicit_rating, length, album_id) VALUES (:song_name, :artist_id, :featured_artist, :explicit_rating, :length, :album_id)"),
+                        [{"song_name": song.song_name, "artist_id": artistId, "featured_artist": song.featured_artist, "explicit_rating": song.explicit_rating, "length": song.length, "album_id": albumId}])
         else:
-            return "Upload Error: Album already exits"
+            return "Upload Error: Album already exists"
     return "OK"
-
 
 
 @router.post("/log_streams/")
@@ -133,7 +147,29 @@ def streams_byArtist(user: User, artist: Artist):
 
     return output
 
-
+@router.post("/top_streams/")
+def top_streams():
+    """Gets the top 10 streamed songs"""
+    stream_data = []
+    with db.engine.begin() as connection:
+        top_streams = connection.execute(sqlalchemy.text("""
+                                           SELECT ROW_NUMBER() OVER (ORDER BY COUNT(streams.stream_id) DESC) AS Position,
+                                                song.song_name AS Song, artist.artist_name As Artist, COUNT(streams.stream_id) AS Streams
+                                           FROM streams
+                                           JOIN song on song.song_id = streams.song_id
+                                           JOIN artist on artist.id = song.artist_id
+                                           GROUP BY streams.song_id, song.song_name, artist.artist_name
+                                           ORDER BY Position ASC
+                                           LIMIT 10
+                                           """))
+        for Position, Song, Artist, Streams in top_streams:
+            stream_data.append({
+                'Position': Position,
+                'Song': Song,
+                'Artist': Artist,
+                'Streams': Streams
+            })
+    return stream_data
 
 @router.post("/create_playlist/") 
 def create_playlist(playlist: Playlist):
@@ -155,10 +191,6 @@ def add_song_to_playlist(song: Song, playlist: Playlist, user: User):
     else:
             "Song Added to Playlist"
 
-
-    
-    
-    # work right here ma boi
 @router.post("/songs/submit_rating/")
 def add_rating_to_song(song: str, user_rating: int):
     """Submits their rating for a song if it is explicit or not"""
