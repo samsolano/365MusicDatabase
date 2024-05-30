@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from src.api import auth
+from MusicDatabase.src.api import auth
 from enum import Enum
 import math
 import sqlalchemy
-from src import database as db
+from MusicDatabase.src import database as db
 from typing import Dict
+from pip._vendor import requests
+import json
+import openai
+import MusicDatabase.creds as creds
 
 
 router = APIRouter(
@@ -182,3 +186,41 @@ def get_clean_songs(playlist_name: str):
             filtered_arr.append(songs)
             
     return filtered_arr
+
+
+@router.post("/songs/recommend_songs/")
+def reccomend_song(genre: str):
+    """Gets a genre and reccomends a song based on that"""
+
+    # Define the endpoint URL
+    url = "https://api.openai.com/v1/chat/completions"
+
+    # Define the request headers
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + creds.OPENAI_API_KEY
+    }
+
+    # Define the request payload
+    payload = {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": f"You are a Music Reccomendation assistant, I will give you a genre name or lead, and then you will reccomend one song based on that. And you will only say the song name, and artist, nothing else\
+                      Reccomend me a song that is {genre}."}],
+        "temperature": 0.7
+    }
+
+    # Convert payload to JSON format
+    payload_json = json.dumps(payload)
+
+    # Make the POST request
+    response = requests.post(url, headers=headers, data=payload_json)
+
+    # Print the response
+    myDict = {}
+    myDict = response.json()
+    myDict= myDict['choices']
+    myDict = myDict[0]
+    myDict = myDict['message']['content']
+
+    
+    return myDict
