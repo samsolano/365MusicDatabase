@@ -1,15 +1,18 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from src.api import auth
+from MusicDatabase.src.api import auth
 from enum import Enum
 import math
 import sqlalchemy
-from src import database as db
+from MusicDatabase.src import database as db
 from typing import Dict
 from pip._vendor import requests
 import json
 # import openai
-import creds as creds
+# import creds as creds
+import os
+import dotenv
+from dotenv import load_dotenv, find_dotenv
 
 
 router = APIRouter(
@@ -201,13 +204,27 @@ def get_clean_songs(playlist_name: str):
 def reccomend_song(genre: str):
     """Gets a genre and reccomends a song based on that"""
 
+    APIKEY = ""
+
+
+
+    dotenv_path = find_dotenv()
+    load_dotenv(dotenv_path)
+
+    APIKEY = os.environ.get("CHAT_KEY")
+
+    def database_connection_url():
+        dotenv.load_dotenv()
+
+        APIKEY = os.environ.get("CHAT_KEY")
+
     # Define the endpoint URL
     url = "https://api.openai.com/v1/chat/completions"
 
     # Define the request headers
     headers = {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + creds.OPENAI_API_KEY
+        "Authorization": "Bearer " + APIKEY
     }
 
     # Define the request payload
