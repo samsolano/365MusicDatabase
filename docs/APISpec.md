@@ -133,7 +133,7 @@ Adds a new song to the music database. Adds a struct Song to the database with s
 The API calls are made in this sequence when the User wants to make a playlist:
 
 1. `Give Playlist Name`
-2. `List Song Suggestions`
+2. `Song Reccomendation`
 3. `Search For Songs`
 4. `Add Song to Playlist`
 
@@ -159,16 +159,16 @@ The user creates a playlist and gives it a name.
 }
 ```
 
-### 3.2. List Song Suggestions - `/playlist/make` (POST)
+### 3.2. Song Reccomendation - `reccomend_song` (POST)
 
-Lists some songs the user can pick from to start their playlist.
+Lists a song in a genre the user might be interested in for a playlist
 
 **Response**:
 
 ```json
 [
   {
-    "top_songs": "string"
+    "song_suggestion": "string"
   }
 ]
 ```

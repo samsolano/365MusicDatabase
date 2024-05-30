@@ -147,29 +147,6 @@ def streams_byArtist(user: User, artist: Artist):
 
     return output
 
-@router.post("/top_streams/")
-def top_streams():
-    """Gets the top 10 streamed songs"""
-    stream_data = []
-    with db.engine.begin() as connection:
-        top_streams = connection.execute(sqlalchemy.text("""
-                                           SELECT ROW_NUMBER() OVER (ORDER BY COUNT(streams.stream_id) DESC) AS Position,
-                                                song.song_name AS Song, artist.artist_name As Artist, COUNT(streams.stream_id) AS Streams
-                                           FROM streams
-                                           JOIN song on song.song_id = streams.song_id
-                                           JOIN artist on artist.id = song.artist_id
-                                           GROUP BY streams.song_id, song.song_name, artist.artist_name
-                                           ORDER BY Position ASC
-                                           LIMIT 10
-                                           """))
-        for Position, Song, Artist, Streams in top_streams:
-            stream_data.append({
-                'Position': Position,
-                'Song': Song,
-                'Artist': Artist,
-                'Streams': Streams
-            })
-    return stream_data
 
 @router.post("/create_playlist/") 
 def create_playlist(playlist: Playlist):
@@ -256,3 +233,28 @@ def reccomend_song(genre: str):
 
     
     return myDict
+
+
+@router.post("/top_streams/")
+def top_streams():
+    """Gets the top 10 streamed songs"""
+    stream_data = []
+    with db.engine.begin() as connection:
+        top_streams = connection.execute(sqlalchemy.text("""
+                                           SELECT ROW_NUMBER() OVER (ORDER BY COUNT(streams.stream_id) DESC) AS Position,
+                                                song.song_name AS Song, artist.artist_name As Artist, COUNT(streams.stream_id) AS Streams
+                                           FROM streams
+                                           JOIN song on song.song_id = streams.song_id
+                                           JOIN artist on artist.id = song.artist_id
+                                           GROUP BY streams.song_id, song.song_name, artist.artist_name
+                                           ORDER BY Position ASC
+                                           LIMIT 10
+                                           """))
+        for Position, Song, Artist, Streams in top_streams:
+            stream_data.append({
+                'Position': Position,
+                'Song': Song,
+                'Artist': Artist,
+                'Streams': Streams
+            })
+    return stream_data
