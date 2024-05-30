@@ -1,23 +1,100 @@
 Possible Concurrency Control Issues:
 
-# 1: Read Skew
 
-    - If a user tries to see the 10 most streamed songs, they will count the total streams of each song, but if they start playing a song in the middle of counting up all the streams, then the 10 most streamed might be in accurate with the actual streams now
+## Case 1: Dirty Read
 
-    - Solution:
-         is to not allow changes while counting up streams, and then as soon as the reading and counting is finished, then allow the
-        streams to be added to the streams playlist, so that getting the top 10 is accurate when the user calls for it
+**Scenario:**
+Two users are interacting with the database. User A is uploading a new song and User B is searching for songs by the same artist at the same time.
 
-# 2: Simultaneous Writes
+### Sequence Diagram
+```
+User A                         Database                        User B
+   |                               |                              |
+   |----- Start Transaction A ---->|                              |
+   |                               |                              |
+   |--- Insert new song data ----->|                              |
+   |                               |                              |
+   |                               |<---- Start Transaction B ----|
+   |                               |                              |
+   |                               |---- Search songs by artist -->|
+   |                               |                              |
+   |                               |<---- Return results ---------|
+   |                               |                              |
+   |----- Commit Transaction A --->|                              |
+   |                               |                              |
+```
 
-    - If two users try to upload the same song or album at the same time there could be an issue where there are duplicates or conflicts
+### Issue
+User B may see the new song added by User A before User A commits the transaction. If User A later rolls back the transaction, User B would have read data that was never actually committed.
 
-    -Solution:
-        Use a serializable isolation level to make sure that the insertions are separate, and then add a check to see if the song/album to be uploaded already exists
+### Solution
+Use **READ COMMITTED** isolation level to prevent dirty reads. This ensures that any data read by User B is committed by User A.
 
-# 3 Lost Update
+<br/> <br/>
 
-    - If two users submit a new explicit rating for a song at the exact same time, they will both take the current rating and then change it based on that initial value which will be the same for both user calls, then one will be overwritten.
+## Case 2: Non-Repeatable Read
 
-    -Solution:
-        Use the Repeatable Read isolation level so that another call cant change the average rating until the first call is finished
+**Scenario:**
+User A is viewing the details of an album while User B updates the album's details.
+
+### Sequence Diagram
+```
+User A                         Database                        User B
+   |                               |                              |
+   |----- Start Transaction A ---->|                              |
+   |                               |                              |
+   |---- Read album details -----> |                              |
+   |                               |                              |
+   |                               |<----- Start Transaction B ---|
+   |                               |                              |
+   |                               |<----- Update album details --|
+   |                               |                              |
+   |----- Read album details ----->|                              |
+   |                               |                              |
+   |----- Detect change ---------->|                              |
+   |                               |                              |
+   |----- Commit Transaction A --->|                              |
+   |                               |                              |
+```
+
+### Issue
+User A might see different data if they read the album details again within the same transaction due to User B’s update.
+
+### Solution
+Use **REPEATABLE READ** isolation level to prevent non-repeatable reads. This ensures that User A will see the same album details throughout their transaction.
+
+
+<br/> <br/>
+## Case 3: Phantom Read
+
+**Scenario:**
+User A is checking the list of trending songs while User B adds a new song that becomes a trending song during the process.
+
+### Sequence Diagram
+```
+User A                         Database                        User B
+   |                               |                              |
+   |----- Start Transaction A ---->|                              |
+   |                               |                              |
+   |--- Get trending songs list -->|                              |
+   |                               |                              |
+   |                               |<----- Start Transaction B ---|
+   |                               |                              |
+   |                               |<----- Add new song ----------|
+   |                               |                              |
+   |                               |<----- Update trending list --|
+   |                               |                              |
+   |--- Get trending songs list -->|                              |
+   |                               |                              |
+   |----- Detect new song -------->|                              |
+   |                               |                              |
+   |----- Commit Transaction A --->|                              |
+   |                               |                              |
+```
+
+### Issue
+User A might see different sets of trending songs when they query the trending list again within the same transaction due to the new song added by User B.
+
+### Solution
+Use **SERIALIZABLE** isolation level to prevent phantom reads. This ensures that User A will see a consistent set of trending songs throughout their transaction.
+
