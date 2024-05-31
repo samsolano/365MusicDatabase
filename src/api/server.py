@@ -10,11 +10,11 @@ import sqlalchemy
 from src import database as db
 
 description = """
-Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
+Shit boy this the spot for your new music discovery
 """
 
 app = FastAPI(
-    title="Central Coast Cauldrons",
+    title="(dBDb)daBeatzDatabase",
     description=description,
     version="0.0.1",
     terms_of_service="http://example.com/terms/",
