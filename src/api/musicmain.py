@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from MusicDatabase.src.api import auth
+from src.api import auth
 from enum import Enum
 import math
 import sqlalchemy
-from MusicDatabase.src import database as db
+from src import database as db
 from typing import Dict
 from pip._vendor import requests
 import json
