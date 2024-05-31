@@ -213,11 +213,6 @@ def reccomend_song(genre: str):
 
     APIKEY = os.environ.get("CHAT_KEY")
 
-    def database_connection_url():
-        dotenv.load_dotenv()
-
-        APIKEY = os.environ.get("CHAT_KEY")
-
     # Define the endpoint URL
     url = "https://api.openai.com/v1/chat/completions"
 
