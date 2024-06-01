@@ -22,7 +22,6 @@ router = APIRouter(
 )
 
 class User(BaseModel):
-    user_id: int
     username: str
 
 class Artist(BaseModel):
@@ -48,7 +47,6 @@ class Album(BaseModel):
 # user playlist relational table: userid and playlistid and playlist name
 # song playlsit user table: songid and playlistid and userid
 class Playlist(BaseModel):
-    playlist_id: int
     playlist_name: str
     user_id: int
 
@@ -150,26 +148,58 @@ def streams_byArtist(user: User, artist: Artist):
 
     return output
 
-
 @router.post("/create_playlist/") 
-def create_playlist(playlist: Playlist):
+def create_playlist(playlist_name: str, username: str):
     """Create a new playlist for a user"""
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("INSERT INTO user_playlist (playlist_name, user_id) VALUES (:playlist_name, :user_id)"),
-                           [{"playlist_name": playlist.playlist_name, "user_id": playlist.user_id}])
+        connection.execute(sqlalchemy.text("""INSERT INTO user_playlist (playlist_name, user_id)
+                                              SELECT :playlist_name, user_id
+                                              FROM users where username = :username"""),
+                           [{"playlist_name": playlist_name, "username": username}])
     return "Playlist Created"
 
 
 @router.post("/add_song_to_playlist/")
-def add_song_to_playlist(song: Song, playlist: Playlist, user: User):
+def add_songs_to_playlist(song_name: str, album: str, playlist_name: str , username: str):
     """Add a song to a playlist for a user"""
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("INSERT INTO song_playlist (song_id, playlist_id, user_id) VALUES (:song_id, :playlist_id, :user_id)"),
-                           [{"song_id": song.song_id, "playlist_id": playlist.playlist_id, "user_id": user.user_id}])
-    if(song.song_id is None or playlist.playlist_id is None or user.user_id is None):
-        return "Error: Song, Playlist, or User does not exist"
-    else:
-            "Song Added to Playlist"
+        song_check = connection.execute(sqlalchemy.text(
+            "SELECT song_id FROM song WHERE song_name = :name"),
+                                        [{"name": song_name}]).scalar()
+        if song_check is not None:
+            connection.execute(sqlalchemy.text(
+                    """INSERT INTO song_playlist (playlist_id, song_id)
+                            WITH
+                            playlist_id AS (
+                                SELECT
+                                    playlist_id
+                                FROM
+                                    user_playlist
+                                JOIN users ON users.user_id = user_playlist.user_id
+                                WHERE
+                                    users.username = :username
+                                    AND user_playlist.playlist_name = :playlist_name
+                            ),
+                            song_id AS (
+                                SELECT
+                                    song.song_id
+                                FROM
+                                    song
+                                JOIN album on album.id = song.album_id
+                                WHERE
+                                    song.song_name = :song_name 
+                                    AND album.album_name = :album
+                            )
+                            SELECT
+                            *
+                            FROM
+                            playlist_id,
+                            song_id
+                            """),
+                        [{"song_name": song_name, "album": album, "username": username, "playlist_name": playlist_name}])
+        else:
+            return "Song Addition Error: Song does not exist"
+    return "OK"
 
 @router.post("/songs/submit_rating/")
 def add_rating_to_song(song: str, user_rating: int):
