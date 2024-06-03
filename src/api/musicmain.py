@@ -300,3 +300,77 @@ def top_streams():
                 'Streams': Streams
             })
     return stream_data
+
+@router.post("/playlist/recommend")
+def recommend_new_songs(playlist_name: str):
+    """Gets the top 5 songs based on your playlist and other playlists with similar songs"""
+    ret = []
+    
+    with db.engine.begin() as connection:
+        recc_songs = connection.execute(sqlalchemy.text("""WITH
+                                                            playlist_6_songs AS (
+                                                                SELECT
+                                                                song_id
+                                                                FROM
+                                                                song_playlist
+                                                                JOIN user_playlist AS up ON up.playlist_id = song_playlist.playlist_id
+                                                                JOIN users AS u ON u.user_id = up.user_id
+                                                                WHERE
+                                                                up.playlist_name = :playlist_name
+                                                            ),
+                                                            matching_playlists AS (
+                                                                SELECT
+                                                                sp.playlist_id
+                                                                FROM
+                                                                song_playlist AS sp
+                                                                JOIN user_playlist AS up ON up.playlist_id = sp.playlist_id
+                                                                JOIN users AS u ON u.user_id = up.user_id
+                                                                WHERE
+                                                                song_id IN (
+                                                                    SELECT
+                                                                    song_id
+                                                                    FROM
+                                                                    playlist_6_songs
+                                                                )
+                                                                AND up.playlist_name != :playlist_name
+                                                                GROUP BY
+                                                                sp.playlist_id
+                                                                HAVING
+                                                                COUNT(DISTINCT song_id) >= 3
+                                                            )
+                                                            SELECT DISTINCT
+                                                            sp.song_id,
+                                                            s.song_name,
+                                                            al.album_name,
+                                                            art.artist_name
+                                                            FROM
+                                                            song_playlist AS sp
+                                                            JOIN song AS s ON s.song_id = sp.song_id
+                                                            JOIN album AS al ON s.album_id = al.id
+                                                            JOIN artist AS art ON s.artist_id = art.id
+                                                            WHERE
+                                                            playlist_id IN (
+                                                                SELECT
+                                                                playlist_id
+                                                                FROM
+                                                                matching_playlists
+                                                            )
+                                                            AND sp.song_id NOT IN (
+                                                                SELECT
+                                                                song_id
+                                                                FROM
+                                                                playlist_6_songs
+                                                            )
+                                                            LIMIT
+                                                            5
+                                                            """),
+                           [{"playlist_name": playlist_name}])
+        
+        for songs in recc_songs:
+            ret.append({
+                "song_id": songs.song_id,
+                "song_name": songs.song_name,
+                "album_name": songs.album_name,
+                "artist_name": songs.artist_name
+            })
+    return ret
