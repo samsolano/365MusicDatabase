@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
-from src.api import auth
+from MusicDatabase.src.api import auth
 from enum import Enum
 import math
 import sqlalchemy
-from src import database as db
+from MusicDatabase.src import database as db
 from typing import Dict
 from pip._vendor import requests
 import json
@@ -100,7 +100,8 @@ def log_streams(song_name: str, artist_name: str, username: str):
         song_id = connection.execute(sqlalchemy.text("SELECT song_id FROM song JOIN artist ON artist.id = song.artist_id WHERE song_name = :name AND artist_name = :artist_name"),
                             [{"name": song_name, "artist_name": artist_name}]).scalar()
         if song_id is None:
-            return "Song does not exist!"
+            return "Song does not exist by this Artist!"
+        
         connection.execute(sqlalchemy.text("INSERT INTO streams (user_id, song_id) VALUES (:userID, :songID)"), 
                             [{"userID": user_id , "songID": song_id}])
 
@@ -151,6 +152,19 @@ def streams_byArtist(user: User, artist: Artist):
     output = []
 
     with db.engine.begin() as connection:
+
+
+        user_id = connection.execute(sqlalchemy.text("SELECT user_id FROM users WHERE username = :name"), 
+                            [{"name": user.username}]).scalar()
+        if user_id is None:
+            return "User doesn't exist!"
+        
+        artist_name = connection.execute(sqlalchemy.text(
+            "SELECT * FROM artist WHERE artist_name = :name"),
+                                        [{"name": artist.artist_name}]).scalar()
+        if artist_name is None:
+            return "Artist doesn't exist!"
+
         result = connection.execute(sqlalchemy.text(""" 
                                                 SELECT song.song_name  FROM streams
                                                 JOIN song on streams.song_id = song.song_id 
@@ -158,6 +172,8 @@ def streams_byArtist(user: User, artist: Artist):
                                                 JOIN users on users.user_id = streams.user_id
                                                 WHERE users.username = :USERNAME AND artist.artist_name = :ARTISTID
                                                                 """), [{"USERNAME": user.username, "ARTISTID": artist.artist_name}])
+    if result is None:
+        return "Username or Artist name is incorrect"
 
     if result is not None:    
         for row in result:
@@ -169,17 +185,47 @@ def streams_byArtist(user: User, artist: Artist):
 def create_playlist(playlist_name: str, username: str):
     """Create a new playlist for a user"""
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("""INSERT INTO user_playlist (playlist_name, user_id)
-                                              SELECT :playlist_name, user_id
-                                              FROM users where username = :username"""),
-                           [{"playlist_name": playlist_name, "username": username}])
-    return f"Playlist: {playlist_name} Created!"
+
+        new_playlist_name = connection.execute(sqlalchemy.text("""SELECT playlist_name FROM user_playlist
+                                              JOIN users on users.user_id = user_playlist.user_id
+                                              WHERE playlist_name = :PLAYNAME AND users.username = :USERNAME """),
+                                              [{"PLAYNAME": playlist_name, "USERNAME": username}]).scalar()
+        
+        if new_playlist_name is None:
+            connection.execute(sqlalchemy.text("""INSERT INTO user_playlist (playlist_name, user_id)
+                                                SELECT :playlist_name, user_id
+                                                FROM users where username = :username"""),
+                            [{"playlist_name": playlist_name, "username": username}])
+            return f"Playlist: {playlist_name} Created!"
+        else:
+            return "playlist name already exists for that user"
 
 
 @router.post("/add_song_to_playlist/")
 def add_songs_to_playlist(song_name: str, album: str, playlist_name: str , username: str):
     """Add a song to a playlist for a user"""
     with db.engine.begin() as connection:
+
+        user_id = connection.execute(sqlalchemy.text("SELECT user_id FROM users WHERE username = :name"), 
+                            [{"name": username}]).scalar()
+        
+        if user_id is None:
+            return "User doesn't exist"
+        
+        album_id = connection.execute(sqlalchemy.text("SELECT id FROM album WHERE album_name = :name"), 
+                            [{"name": album}]).scalar()
+        
+        if album_id is None:
+            return "Album doesn't exist"
+        
+        
+        playlist_id = connection.execute(sqlalchemy.text("SELECT playlist_id FROM user_playlist WHERE user_id = :id AND playlist_name = :name"), 
+                                    [{"id": user_id, "name": playlist_name}]).scalar()
+        
+        if playlist_id is None:
+            return "Playlist doesn't exist"
+
+
         song_check = connection.execute(sqlalchemy.text(
             "SELECT song_id FROM song WHERE song_name = :name"),
                                         [{"name": song_name}]).scalar()
@@ -250,6 +296,14 @@ def view_playlist(playlist_name: str, username: str):
 def add_rating_to_song(song: str, user_rating: int):
     """Submits their rating for a song if it is explicit or not"""
     with db.engine.begin() as connection:
+
+        song_id = connection.execute(sqlalchemy.text("SELECT song_id FROM song JOIN artist ON artist.id = song.artist_id WHERE song_name = :name"),
+                            [{"name": song}]).scalar()
+        
+        if song_id is None:
+            return "Song doesn't exist"
+
+
         connection.execute(sqlalchemy.text("""INSERT INTO explicit_submissions (song_id, exbool) 
                                             SELECT song_id, :rating
                                             FROM song
@@ -262,8 +316,18 @@ def add_rating_to_song(song: str, user_rating: int):
 @router.post("/playlist/get_clean_songs/")
 def get_clean_songs(playlist_name: str):
     """Returns all songs from the playlist that are not explicit"""
+
+    
+    
     filtered_arr = []
     with db.engine.begin() as connection:
+
+        playlist_id = connection.execute(sqlalchemy.text("SELECT playlist_id FROM user_playlist WHERE playlist_name = :name"), 
+                            [{"name": playlist_name}]).scalar()
+                
+        if playlist_id is None:
+            return "Playlist doesn't exist"
+
         filtered_list = connection.execute(sqlalchemy.text("""SELECT song_name
                                                 FROM song_playlist
                                                 JOIN user_playlist on user_playlist.playlist_id = song_playlist.playlist_id
@@ -351,12 +415,21 @@ def top_streams():
         raise HTTPException(status_code=500, detail=str(e))
     return stream_data
 
+
+
 @router.post("/playlist/recommend")
 def recommend_new_songs(playlist_name: str):
     """Gets the top 5 songs based on your playlist and other playlists with similar songs"""
     try: 
         ret = []
         with db.engine.begin() as connection:
+
+            playlist_id = connection.execute(sqlalchemy.text("SELECT playlist_id FROM user_playlist WHERE playlist_name = :name"), 
+                            [{"name": playlist_name}]).scalar()
+                
+            if playlist_id is None:
+                return "Playlist doesn't exist"
+
             recc_songs = connection.execute(sqlalchemy.text("""WITH
                                                                 playlist_6_songs AS (
                                                                     SELECT
@@ -435,14 +508,26 @@ def remove_song_from_playlist(song_name: str, playlist_name: str):
     """Remove song from user playlist"""
 
     with db.engine.begin() as connection:
+
+        song_id = connection.execute(sqlalchemy.text("SELECT song_id FROM song JOIN artist ON artist.id = song.artist_id WHERE song_name = :name"),
+                            [{"name": song_name}]).scalar()
+        if song_id is None:
+            return "Song doesn't exist"
+        
+        playlist_id = connection.execute(sqlalchemy.text("SELECT playlist_id FROM user_playlist WHERE playlist_name = :name"), 
+                            [{"name": playlist_name}]).scalar()
+        
+        if playlist_id is None:
+            return "Playlist doesn't exist"
+
         connection.execute(sqlalchemy.text(
             """
                 DELETE FROM song_playlist
-USING user_playlist, song
-WHERE song_playlist.playlist_id = user_playlist.playlist_id
-  AND song_playlist.song_id = song.song_id
-  AND user_playlist.playlist_name = :playlistName
-  AND song.song_name = :songName
+                USING user_playlist, song
+                WHERE song_playlist.playlist_id = user_playlist.playlist_id
+                AND song_playlist.song_id = song.song_id
+                AND user_playlist.playlist_name = :playlistName
+                AND song.song_name = :songName
             """),
             [{"songName": song_name, "playlistName" : playlist_name }])
         
