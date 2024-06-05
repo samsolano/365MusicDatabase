@@ -156,12 +156,12 @@ def streams_byArtist(user: User, artist: Artist):
                                                 JOIN song on streams.song_id = song.song_id 
                                                 JOIN artist on artist.id = song.artist_id 
                                                 JOIN users on users.user_id = streams.user_id
-                                                WHERE users.user_id = :USERID AND artist.id = :ARTISTID
-                                                                """), [{"USERID": user.user_id, "ARTISTID": artist.artist_id}])
-         
+                                                WHERE users.username = :USERNAME AND artist.artist_name = :ARTISTID
+                                                                """), [{"USERNAME": user.username, "ARTISTID": artist.artist_name}])
+
     if result is not None:    
-        for song in result:
-            output.append({"song": song})
+        for row in result:
+            output.append(row[0]) 
 
     return output
 
