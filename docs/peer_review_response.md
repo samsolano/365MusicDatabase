@@ -1,163 +1,155 @@
-# API Specification for Music Database
+# Peer Reviews Responses
 
-## 1. Requesting Streaming Data
+## 1. Noah Giboney
 
-User can request three different ways to see streaming data
+1. Schema Comments
+2. Code Review Comments
+3. Test Results
+4. Product Ideas
 
-1. `Get Streams`
-2. `Streams Byartist`
-3. `Top Streams`
+### 1.1. Schema Comments
 
-### 1.1. Get Streams - `get_streams` (GET)
+1. We added foreign keys already to our tables
+2. Fixed all Class variables to have same snake_case convention
+3. This one doesn't make sense
+4. We have unique constraints in our user table, the user_id
+5. We have a created_at in every table we have
+6. We implemented it that way because we plan on having user submissions for explicit ratings from 1-1a
+7. We fixed it, the only possible null column was the featured artists but now its just empty
+8. Ok fixed that, got rid of the two id columns that had strin
+9. There is now only a single endpoint for user submitted ratings
+10. Added an index to make stuff faster
+11. Added more catch blocks to handle errors
+12. Not necessary for most of our endpoints
 
-Gets total number of streams logged
+### 1.2 Code Review Comments
 
-**Request**:
+1. I'm not sure how we would authorize each endpoint, We have the API Key to check if people are allowed to use our endpoints
+2.  Will get rid of the docs page that still had Central Coast Cauldrons
+3. Will fix the indentation
+4. Redeployed sorry about that, theyre all current now and working
+5. Probably wise long term but for our project won't be necessary
+6. We will make sure to make all consistent
+7. Got rid of all formatting to ensure no sql injections
+8. We added more catches to check for errors
+9. We print strings in order to make it obvious that it was successful
+10. 
+11. We have the sql check it now
+12. Will address that and check for NULL values ----------------------
 
-```json
-{
-  "user_id": 0,
-  "username": "string"
-}
-```
 
-### 1.2. Streams by Artist - (GET)
 
-Gets streams specific to an artist that the user asks for
+### 1.3. Test Results
 
-**Request**:
+Unfortunately our Render was down when these tests were run, so Noah was not able to run our code, but we have redeployed it to Render and have made sure our endpoints are working
 
-```json
-{
-  "user": {
-    "user_id": 0,
-    "username": "string"
-  },
-  "artist": {
-    "artist_name": "string"
-  }
-}
-```
+But for his test flows we can still address them.
 
-**Response**:
+1. This is possible and would work with our endpoints create playlist and add songs to playlist
 
-```json
-[
-  {
-    "artistName": "string",
-    "streamNum": "integer"
-  }
-]
-```
+2. This works fine, adding songs to the library with the info is possible
 
-### 1.3. Top Streans - `top_streams` (GET)
+3. It would be done differently but it would be different, you would call our get_clean_songs and then add them to a playlist for her kids, and if she disagreed with a songs rating she could submit a user explicit rating
 
-Gets the top 10 streamed songs
 
-**Response**:
 
-```json
-[
-  {
-    "Position": "integer",
-    "Song": "string",
-    "Artist": "string",
-    "Streams": "integer"
-  }
-]
-```
+### 1.4 Product Ideas
 
-## 2. Artist New Song
+1. This is a good idea, I will definitely add a delete song from playlist endpoint-----------
+2. I also think this is a good idea, but sharing songs and playlists is probably out of the scope of this project. Also not sure how sharing songs and playlists would work
 
-The API calls are made in this sequence when an artist adds new music:
 
-1. `Create Artist`
-2. `Upload New Music`
 
-### 2.1. Create Artist - `/create_artist/` (POST)
 
-Adds a new aritst to the music database. Adds a struct Artist to the database with album_name being the unique identifier
 
-**Request**:
+## 2. Jesus Avalos Review
+### 2.1. Code Review
 
-```json
-{
-  "artist_name": "string"
-}
-```
+1. Did not implement account creating for api key as security is not a concern.
 
-**Response**:
+2. Fixed api route not being displayed.
 
-```json
-{
-  "artist_id": "integer"
-}
-```
+3. We require api key to use our site.
 
-### 2.2. Upload New Music - `/upload_music/` (POST)
+4. Removed Cenctral Coast Cauldrons references.
 
-Adds a new song to the music database. Adds a struct Song to the database with song_id being the unique identifier.
+5. Albums now require artist name as well.
 
-**Request**:
+6. Create playlist now uses playlist name and username. Log stream uses song_id.
 
-```json
-{
-  "album_name": "string",
-  "artist_name": "string",
-  "song_list": [
-    {
-      "song_name": "string",
-      "artist_name": "string",
-      "featured_artist": "string",
-      "explicit_rating": 0,
-      "length": 0
-    }
-  ],
-  "genre": "string",
-  "explicit_rating": 0,
-  "label": "string",
-  "release_date": "string"
-}
-```
+7. We now only use username and not user_id.
 
-**Response**:
+8. Changed our code, it now uses a query.
 
-```json
-{
-  "success": "string"
-}
-```
+9. Need to implement exception handling for user not existing.
 
-## 3. Make a playlist.
+10. No longer use artist_id and use artist name instead.
 
-The API calls are made in this sequence when the User wants to make a playlist:
+11. We are currently working on a search/view songs endpoint.
 
-1. `Give Playlist Name`
-2. `Song Reccomendation`
-3. `Search For Songs`
-4. `Add Song to Playlist`
+12. We changed the return messages from just "OK".
 
-### 3.1. Give Playlist Name - `/playlist/newplaylist` (POST)
 
-The user creates a playlist and gives it a name.
+### 2.2. Schema/API Design
 
-**Request**:
+1. We changed our streams table and has a foreign key now.
 
-```json
-[
-  {
-    "playlist_name": "string"
-  }
-]
-```
+2. Not needed, int works the same in our implementation.
 
-**Response**:
+3. Added a foreign key to playlists. No longer set to NULL.
 
-```json
-{
-  "success": "string"
-}
-```
+4. Users table no longer allows Nullable usernames.
+
+5. Songs table has artist_id as foreign key now. 
+
+6. Changed songid to song_id in explicit_submissions table.
+
+7. Changed artist table to not allow NULL names
+
+8. Removed nullable from album table. Added foreign key to artist_id.
+
+9. Our code only allows for one album name. 
+
+10. We do plan to split our routes by topic. Coming soon.
+
+11. No particular reason for the naming format. It just be like that.
+
+12. We do plan to change the name of the routes for readability. 
+
+
+### 2.3 Test Results
+
+Flow 1
+1. Our add_user function no longer require user_id, only username.
+
+2. 
+
+### 2.4 Product Ideas
+
+
+
+
+## 3. Luca Ornstil Review
+
+The four issues from Luca are as follows:
+
+1. `Code Review Comments`
+2. `Schema/API Design Comments`
+3. `Test Results`
+4. `Product Ideas`
+
+### 3.1. Code Review Comments
+
+1. Consistency issues with Render and musicman.py have been resloved.
+2. Responses on endpoints now return consistent and useful data.
+3. All potential security issues regarding SQL injections have been resolved.
+4. Checking the env. variables would be more secure, however we have those set and there is no need to check.
+5. Having a log in feature without fixed API_KyEY is something our team decided not to do
+6. All Centrel Coast Cauldron code has been removed from the porject code.
+7. Our team put a constraint that no album was to have the same name.
+8. Our team decided to stick with using a for loops instead of batch inserts.
+9. 
+
 
 ### 3.2. Song Reccomendation - `reccomend_song` (POST)
 
@@ -361,6 +353,6 @@ Returns if successful.
 
 ```json
 {
-  "success": "boolean"
+  "success": "boole yee
 }
 ```
