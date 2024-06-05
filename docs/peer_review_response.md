@@ -122,7 +122,16 @@ But for his test flows we can still address them.
 Flow 1
 1. Our add_user function no longer require user_id, only username.
 
+2. In our log_streams function, we now require song_name, artist_name, and username. We also added catches if any field doesn't exist.
+
+3. Changed our get_streams funtion to only require a username.1a
+
+Flow 2
+1. Create playlist now requires playlist name and username. Also prints a message.
+
 2. 
+
+3.
 
 ### 2.4 Product Ideas
 
