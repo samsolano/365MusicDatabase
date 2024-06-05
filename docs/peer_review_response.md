@@ -1,3 +1,4 @@
+
 # Peer Reviews Responses
 
 ## 1. Noah Giboney
@@ -58,62 +59,38 @@ But for his test flows we can still address them.
 1. This is a good idea, I will definitely add a delete song from playlist endpoint-----------
 2. I also think this is a good idea, but sharing songs and playlists is probably out of the scope of this project. Also not sure how sharing songs and playlists would work
 
-
-
-
+<br/> <br/>
 
 ## 2. Jesus Avalos Review
 ### 2.1. Code Review
 
 1. Did not implement account creating for api key as security is not a concern.
-
 2. Fixed api route not being displayed.
-
 3. We require api key to use our site.
-
 4. Removed Cenctral Coast Cauldrons references.
-
 5. Albums now require artist name as well.
-
 6. Create playlist now uses playlist name and username. Log stream uses song_id.
-
 7. We now only use username and not user_id.
-
 8. Changed our code, it now uses a query.
-
 9. Need to implement exception handling for user not existing.
-
 10. No longer use artist_id and use artist name instead.
-
 11. We are currently working on a search/view songs endpoint.
-
 12. We changed the return messages from just "OK".
 
 
 ### 2.2. Schema/API Design
 
 1. We changed our streams table and has a foreign key now.
-
 2. Not needed, int works the same in our implementation.
-
 3. Added a foreign key to playlists. No longer set to NULL.
-
 4. Users table no longer allows Nullable usernames.
-
 5. Songs table has artist_id as foreign key now. 
-
 6. Changed songid to song_id in explicit_submissions table.
-
 7. Changed artist table to not allow NULL names
-
 8. Removed nullable from album table. Added foreign key to artist_id.
-
 9. Our code only allows for one album name. 
-
 10. We do plan to split our routes by topic. Coming soon.
-
 11. No particular reason for the naming format. It just be like that.
-
 12. We do plan to change the name of the routes for readability. 
 
 
@@ -129,23 +106,35 @@ Flow 1
 Flow 2
 1. Create playlist now requires playlist name and username. Also prints a message.
 
-2. 
+2. Our add song to playlist endpoint works as intended. It requires song name, artist name, and username.
 
-3.
+3. Fix our get ratings endpoint.
+
+Flow 3
+1. Upload album is working as intended.
+
+2. Log streams works as intended.
+
+3. Explicit ratings was fixed.
 
 ### 2.4 Product Ideas
 
+1. We do not plan on implementing a social aspect as that would require more developement time.
 
+2. We changed our implementation of uploading music to allow for the same song name or album name. This requires for the artist to be different though.
 
+3. We are planning on implementing a search function which should allow for these filters.
+
+<br/> <br/>
 
 ## 3. Luca Ornstil Review
 
 The four issues from Luca are as follows:
 
-1. `Code Review Comments`
-2. `Schema/API Design Comments`
-3. `Test Results`
-4. `Product Ideas`
+1. Code Review Comments
+2. Schema/API Design Comments
+3. Test Resul
+4. Product Ideas
 
 ### 3.1. Code Review Comments
 
@@ -157,211 +146,32 @@ The four issues from Luca are as follows:
 6. All Centrel Coast Cauldron code has been removed from the porject code.
 7. Our team put a constraint that no album was to have the same name.
 8. Our team decided to stick with using a for loops instead of batch inserts.
-9. 
+9. We have now implemented try-except blocks in certain endpoints that would benefit.
+10. Our team decided not to implement proper HTTP status codes.
+11. We have now addressed the unnecessary imports.
+12. Naming consistency issues have now been resoloved.
 
 
-### 3.2. Song Reccomendation - `reccomend_song` (POST)
+### 3.2. Schema/API Design Comments
 
-Lists a song in a genre the user might be interested in for a playlist
+1. It worked fine without this fix
+2. We have now added foreign key contraints.
+3. We have now changed the nullability of certain columns fo maintain data integrity
+4. Our team decided to choose exbool data type instead for our implmentation
+5. Our team decided to not create a genre table because it's unnecessary
+6. We have now added unique constraints on certain columns.
+7. We have now made the dated entries more consistent.
+8. We have now prevented null values in certain columns.
+9. Since the code is highly dependent on names, changing the consistency of names we decided not to do.
+10. We are planning on adding pagination to some of our endpoints
+11. We are planning on changing the URLs to our endpoints.
+12. We have different explicit content endpoints for different functionality.
 
-**Response**:
+### 3.3. Test Results
 
-```json
-[
-  {
-    "song_suggestion": "string"
-  }
-]
-```
+1. The issues raised in the Test Results have all been addressed and changes have been made to the endpoints to be much more clear and easier to use.
 
-### 3.3. Search For Songs - `/playlist/addsong/search` (POST)
+### 3.4. Product Ideas
 
-Allows the user to search for a song by name or by artist to add to their playlist.
-
-**Request**:
-
-```json
-[
-  {
-    "artist_name": "string",
-    "song_name": "string"
-  }
-]
-```
-
-**Response**:
-
-```json
-{
-  "search_results": "string",
-  "song_name": "string",
-  "song_id": "integer"
-}
-```
-
-### 3.4. Add Song to Playlist - `/playlist/addsong` (POST)
-
-Allows the User to add a song to a playlist
-
-**Request**:
-
-```json
-[
-  {
-    "playlist_name": "string",
-    "song_name": "string",
-    "song_id": "integer"
-  }
-]
-```
-
-**Response**:
-
-```json
-{
-  "success": "string"
-}
-```
-
-## 4. Like Songs and Add to 'Liked' Playlist
-
-The API calls are made in this sequence when the User likes a song:
-
-1. `Get Song ID`
-2. `Add to Liked Songs`
-
-### 2.1. Get Song ID - `/songs/id` (POST)
-
-Gets the song ID for the song that was liked by the User.
-
-**Request**:
-
-```json
-[
-  {
-    "song_name": "string",
-    "artist_name": "string"
-  }
-]
-```
-
-**Response**:
-
-```json
-[
-  {
-    "song_id": "integer"
-  }
-]
-```
-
-### 2.2. Add to Liked Songs - `/playlist/likedsongs` (POST)
-
-Add the song the User liked to the 'Liked Songs' playlist.
-
-**Request**:
-
-```json
-[
-  {
-    "song_id": "integer"
-  }
-]
-```
-
-**Response**:
-
-```json
-{
-  "success": "string"
-}
-```
-
-## 5. Get Explicit Content.
-
-The API calls are made in this sequence when the User wants to make a playlist:
-
-1. `Submit explicit rating`
-
-### 5.1. Submit Explicit Content Rating - `/song/input_explicit` (POST)
-
-Submit an explicit content rating.
-
-**Request**:
-
-```json
-[
-  {
-    "song_id": "string",
-    "explicit_rating": "integer"
-  }
-]
-```
-
-## 6. Get Explicit Content.
-
-The API calls are made in this sequence when the User wants to make a playlist:
-
-1. `Get explicit rating`
-2. `List appropiate songs`
-3. `Submit Explicit`
-
-### 6.1. Get explicit - `/songs/get_explicit` (POST)
-
-Returns a the explicit rating of a song.
-
-**Return**:
-
-```json
-[
-  {
-    "explicit": "floating"
-  }
-]
-```
-
-### 6.2. Get non explicit songs - `/songs/non_explicit_list` (POST)
-
-Returns a the explicit rating of a song.
-**Request**:
-
-```json
-[
-  {
-    "rating": "floating"
-  }
-]
-```
-
-**Response**:
-
-```json
-[
-  {
-    "song_id": "integer",
-    "explicit": "floating"
-  }
-]
-```
-
-### 6.3. Submit Explicit Rating - `/songs/submit_rating` (POST)
-
-Returns if successful.
-**Request**:
-
-```json
-[
-  {
-    "song": "string",
-    "rating": "int"
-  }
-]
-```
-
-**Response**:
-
-```json
-{
-  "success": "boole yee
-}
-```
+1. Our team has implemented a similar endpoint to the one recommended and has similar behavior.
+2. We have created a playlist viewer that allows the user to view the songs in there playlist, however we decided to not implement the additional analytical data.
