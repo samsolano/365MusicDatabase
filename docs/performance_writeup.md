@@ -99,15 +99,15 @@
 
     Three slowest Endpoints:
 
-        1: Recommend New Songs:
+        1: Recommend New Songs:   //index on song_playlist
             - Old Time: 932 ms
             - New Time:
 
-        2: Top Streams:
+        2: Top Streams:           //index on streams
             - Old Time: 843 ms
             - New Time:
 
-        3: Remove Song From Playlist:
+        3: Remove Song From Playlist:    //index on song_playlist
             - Old Time: 815 ms
             - New Time:
 
