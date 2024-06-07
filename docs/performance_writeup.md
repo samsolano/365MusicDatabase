@@ -8,14 +8,14 @@
 
     -Explanation:
         We have a total of ___ rows in our tables, which is split up as:
-            - albums: 1642
-            - artist: 162
+            - albums: 1682
+            - artist: 181
             - explicit_submissions: 4
-            - song: 26335
-            - song_playlist:
-            - streams: 14
-            - user_playlist: 2501
-            - users:  40,011
+            - song: 26741
+            - song_playlist:5374725
+            - streams: 5774216
+            - user_playlist: 250002
+            - users:  40,013
 
         We think that realisitically there would be far more songs, which would add more artists, and albums. But we do think it makes sense that users would make lots of playlists and with lots of different songs in those playlists, and that users would have many streams from all the times they play their playlists and favorite songs.
 
