@@ -194,7 +194,6 @@
     import json
 
     # Initialize Spotipy with user credentials
-    client_credentials_manager = SpotifyClientCredentials(client_id='527add64f7c94424bb33d9ea663e3e35', client_secret='5f268911127e46559a1babd5551cc026')
     sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
     print("went through credentials")
