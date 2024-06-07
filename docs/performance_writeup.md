@@ -7,14 +7,14 @@
 ### 1. Fake Data Modeling
 
     -Explanation:
-        We have a total of ___ rows in our tables, which is split up as:
-            - albums: 1682
+        We have a total of 11,467,564 rows in our tables, which is split up as:
+            - albums: 1,682
             - artist: 181
             - explicit_submissions: 4
-            - song: 26741
-            - song_playlist:5374725
-            - streams: 5774216
-            - user_playlist: 250002
+            - song: 26,741
+            - song_playlist: 5,374,725
+            - streams: 5,774,216
+            - user_playlist: 250,002
             - users:  40,013
 
         We think that realisitically there would be far more songs, which would add more artists, and albums. But we do think it makes sense that users would make lots of playlists and with lots of different songs in those playlists, and that users would have many streams from all the times they play their playlists and favorite songs.
@@ -99,9 +99,9 @@
 
     Three slowest Endpoints:
 
-        1: Recommend New Songs:   //index on song_playlist
-            - Old Time: 932 ms
-            - New Time:
+        1: Recommend New Songs:
+            - Old Time After Explain Analyze: 7628 ms
+            - New Time: 1835 ms
 
 **Before**
 
@@ -523,8 +523,8 @@
 ```
 
         2: Top Streams:
-            - Old Time: 843 ms
-            - New Time:
+            - Old Time After Explain Analyze: 8509 ms
+            - New Time: 833 ms
 
 **Before**
 
@@ -604,6 +604,7 @@
   }
 ]
 ```
+
 **After**
 
 ```json
@@ -686,9 +687,9 @@
 ]
 ```
 
-        3: Remove Song From Playlist:    //index on song_playlist
-            - Old Time: 815 ms
-            - New Time:
+        3: Remove Song From Playlist:
+            - Old Time After Explain Analyze: 2928 ms
+            - New Time: 9 ms
 
 **Before**
 
@@ -805,7 +806,6 @@
                 CREATE INDEX idx_song_song_id_song_name ON song(song_id, song_name);
             -Explanation:
                 Boosts performance by enabling faster searches and joins on the relevant columns used in the DELETE query's JOIN and WHERE conditions.
-
 
 # Python Code:
 
